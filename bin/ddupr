@@ -1,0 +1,13 @@
+#!/usr/bin/env perl
+
+use App::DDup -run_script;
+
+=head1 NAME
+
+ddupr - Command line frontend for App::DDup
+
+=head1 AUTHOR
+
+Joakim Lagerqvist <jokke@cpan.org>
+
+=cut
