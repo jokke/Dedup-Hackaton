@@ -123,8 +123,8 @@ sub scan_dir {
     my %sorted_files;    #sorted per size
     for my $file (
         File::Find::Rule    # loop over
-        ->file()            # all files
-        ->exec( sub { !-l $_ } )    # that are not symlinks
+#        ->file()            # all files
+        ->exec( sub { -f $_ && !-l $_ } )    # that are not symlinks
         ->in( $settings->dir )
       )
     {                               # in the specified directory
