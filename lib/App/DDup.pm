@@ -18,6 +18,8 @@ Readonly::Scalar my $KILOBYTE => 1024;
 
 our $VERSION = '0.001';
 
+# ABSTRACT: deduping functionality for DFW.pm hackaton
+
 sub import {
     my (@args) = @_;
     $args[1] and $args[1] eq '-run_script' and run_script();
@@ -81,6 +83,8 @@ sub get_sorted_duplicates {
                     $top->inode != $_->inode    # sort out the hard links
                 } @{$same_size_candidates}
             );
+            $top->clear_head;                   # to save some RAM
+            $top->clear_digest;                 # to save some RAM
 
      # Would be more efficient to print duplicates here but need to store in RAM
      # for sorting and conform to competition rules
@@ -157,3 +161,4 @@ sub scan_dir {
 }
 
 1;
+__END__

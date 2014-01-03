@@ -96,12 +96,13 @@ Has the following Moose attributes/[sg]eters:
 
 Crital errors are generated in two scenarios:
 
-- If a file cannot be opened: the program will "die" (via Carp::confess) and an
-  error message indicating which file that could not be opened for reading and
-  an explanation.
-- If a file cannot be deleted (if the "remove" setting is used): the program
-  will "die" (via Carp::confess) and an error message indicating which file
-  could not be removed.
+If a file cannot be opened: the program will "die" (via Carp::confess) and an
+error message indicating which file that could not be opened for reading and
+an explanation.
+
+If a file cannot be deleted (if the "remove" setting is used): the program
+will "die" (via Carp::confess) and an error message indicating which file
+could not be removed.
 
 Warning messages are generated (via Carp::carp) if a file handled previously
 opened could not be closed, also indicating the file.
@@ -113,16 +114,29 @@ All configuration are controlled via the above mentioned options
 
 =head1 DEPENDENCIES
 
-* List::Util >= 1.33 (for Moose)
-* Moose
-* MooseX::Getopt::Usage
-* MooseX::Getopt::Usage::Role::Man
-* File::Find::Rule
-* Class::Load
-* File::Compare
-* Digest::xxHash and/or Digest::MD5 and/or Digest::SHA1
-* Readonly
-* Perl version 5.10 or higher
+=over
+
+=item * List::Util >= 1.33 (for Moose)
+
+=item * Moose
+
+=item * MooseX::Getopt::Usage
+
+=item * MooseX::Getopt::Usage::Role::Man
+
+=item * File::Find::Rule
+
+=item * Class::Load
+
+=item * File::Compare
+
+=item * Digest::xxHash and/or Digest::MD5 and/or Digest::SHA1
+
+=item * Readonly
+
+=item * Perl version 5.10 or higher
+
+=back
 
 =head1 INCOMPATIBILITIES
 

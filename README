@@ -1,1 +1,89 @@
-Code for The DFW Perl Mongers Winter 2013 Deduplication Hackathon http://dfw.pm.org/
+NAME
+       ddupr - Command line frontend for App::DDup
+
+VERSION
+       0.001
+
+DESCRIPTION
+       Identifying duplicated files in a given directory with the option of
+       removing the duplicates. Developed as a submission to the DFW hackathon.
+
+USAGE
+       Usage:
+            ddupr [OPTIONS]
+
+REQUIRED ARGUMENTS
+       Required:
+           --dir   - Str. Directory to search.
+
+OPTIONS
+       Optional:
+            --help -? --usage - Bool. Display the usage message and exit
+            --man             - Bool. Display man page
+            --head_size       - Int. Default=4096. Use this max length
+                                  (bytes) when looking into a files.
+            --block_size      - Int. Default=65536. Use block size
+                                  (bytes) to reading files.
+            --remove          - Bool. Delete the identified duplicates.
+            --format          - Str. Default=robot. Output format to use
+                                  (human or robot).
+            --checksum        - Str. Default=Digest::xxHash. Digest
+                                  algorithm to use (Digest::MD5, Digest::SHA1 or
+                                  Digest::xxHash). While xxHash is faster, MD5 is
+       more
+                                  reliable.
+            --silent          - Bool. If set, no information will be printed.
+
+EXIT STATUS
+       0 or die if a file cannot be opened;
+
+DIAGNOSTICS
+       Crital errors are generated in two scenarios:
+
+       If a file cannot be opened: the program will "die" (via Carp::confess) and
+       an error message indicating which file that could not be opened for reading
+       and an explanation.
+
+       If a file cannot be deleted (if the "remove" setting is used): the program
+       will "die" (via Carp::confess) and an error message indicating which file
+       could not be removed.
+
+       Warning messages are generated (via Carp::carp) if a file handled
+       previously opened could not be closed, also indicating the file.
+
+CONFIGURATION
+       All configuration are controlled via the above mentioned options.
+
+DEPENDENCIES
+       ·   List::Util >= 1.33 (for Moose)
+
+       ·   Moose
+
+       ·   MooseX::Getopt::Usage
+
+       ·   MooseX::Getopt::Usage::Role::Man
+
+       ·   File::Find::Rule
+
+       ·   Class::Load
+
+       ·   File::Compare
+
+       ·   Digest::xxHash and/or Digest::MD5 and/or Digest::SHA1
+
+       ·   Readonly
+
+       ·   Perl version 5.10 or higher
+
+INCOMPATIBILITIES
+       Currently no known.
+
+BUGS AND LIMITATIONS
+       Currently no bugs or limitations known.
+
+AUTHOR
+       Joakim Lagerqvist <jokke@cpan.org>
+
+LICENSE AND COPYRIGHT
+       This library is free software and may be distributed under the same terms
+       as perl itself.

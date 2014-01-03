@@ -6,7 +6,6 @@ use Class::Load ':all';
 use File::Compare;
 use App::DDup::Settings;
 use Carp qw/confess carp/;
-use Try::Tiny;
 
 our $VERSION = '0.001';
 
@@ -72,7 +71,7 @@ sub build_digest {
     }
 
     open my $fh, q{<}, $self->path
-      or confess q{Cannot open file } . $self->path;
+      or ( carp q{Cannot open file } . $self->path and return 0 );
     binmode $fh;
 
     while ( my $len = read $fh, $data, $self->settings->block_size, $offset ) {
@@ -92,7 +91,7 @@ sub build_head {
     my $data;
 
     open my $fh, '<', $self->path
-      or confess q{Cannot open file } . $self->path;
+      or ( carp q{Cannot open file } . $self->path and return 0 );
     binmode $fh;
 
     read $fh, $data, $self->settings->head_size;
@@ -111,6 +110,10 @@ sub find_duplicates {
     my ( $self, @files ) = @_;
 
     return () if $self->is_duplicate;    # don't compare if self is duplicate
+
+    if ( $self->size == 0 ) {            # assuming that zero sized are the same
+        return map { $_->duplicate($self) } @files;
+    }
 
     if ( scalar(@files) == 1 and not $files[0]->has_digest ) {
         if (
@@ -133,21 +136,14 @@ sub find_duplicates {
         next if $f->is_duplicate;    # already marked as duplicate
 
         # first, compare with head of file then the digest
-        try {
-            if ( $self->head ne $f->head or $self->digest ne $f->digest ) {
-                next;
-            }
-        }
-        catch {
-            warn
-              "Caught error when trying to compare: $_\nContinuing with next\n";
+        if ( $self->head ne $f->head or $self->digest ne $f->digest ) {
             next;
-        };
+        }
 
         # must be a duplicate of self so add it to the list
         $f->duplicate($self);
-        $f->clear_head;      # to save some RAM
-        $f->clear_digest;    # to save some RAM
+        $f->clear_head;              # to save some RAM
+        $f->clear_digest;            # to save some RAM
         push @duplicates, $f;
     }
     return @duplicates;
