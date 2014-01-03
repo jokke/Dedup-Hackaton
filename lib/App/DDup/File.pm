@@ -6,6 +6,7 @@ use Class::Load ':all';
 use File::Compare;
 use App::DDup::Settings;
 use Carp qw/confess carp/;
+use Try::Tiny;
 
 our $VERSION = '0.001';
 
@@ -132,14 +133,21 @@ sub find_duplicates {
         next if $f->is_duplicate;    # already marked as duplicate
 
         # first, compare with head of file then the digest
-        if ( $self->head ne $f->head or $self->digest ne $f->digest ) {
-            next;
+        try {
+            if ( $self->head ne $f->head or $self->digest ne $f->digest ) {
+                next;
+            }
         }
+        catch {
+            warn
+              "Caught error when trying to compare: $_\nContinuing with next\n";
+            next;
+        };
 
         # must be a duplicate of self so add it to the list
         $f->duplicate($self);
-        $f->clear_head;              # to save some RAM
-        $f->clear_digest;            # to save some RAM
+        $f->clear_head;      # to save some RAM
+        $f->clear_digest;    # to save some RAM
         push @duplicates, $f;
     }
     return @duplicates;
