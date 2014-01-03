@@ -71,7 +71,7 @@ sub build_digest {
     }
 
     open my $fh, q{<}, $self->path
-      or confess "Cannot open file $self->path";
+      or confess q{Cannot open file } . $self->path;
     binmode $fh;
 
     while ( my $len = read $fh, $data, $self->settings->block_size, $offset ) {
@@ -80,7 +80,7 @@ sub build_digest {
     }
 
     close $fh
-      or carp "Cannot close file handle for $self->path";
+      or carp q{Cannot close file handle for } . $self->path;
 
     return $digest->digest;
 }
@@ -91,13 +91,13 @@ sub build_head {
     my $data;
 
     open my $fh, '<', $self->path
-      or confess "Cannot open file $self->path";
+      or confess q{Cannot open file } . $self->path;
     binmode $fh;
 
     read $fh, $data, $self->settings->head_size;
 
     close $fh
-      or carp "Cannot close file handle for $self->path";
+      or carp q{Cannot close file handle for } . $self->path;
 
     if ( $data and ( $self->size ) <= $self->settings->head_size ) {
         $self->digest($data);
@@ -150,12 +150,11 @@ sub remove {
 
     if ( $self->settings->remove ) {
         unlink $self->path
-          or confess "Unable to remove $self->path";
+          or confess q{Unable to remove } . $self->path;
     }
     return 1;
 }
 
-__PACKAGE__->meta->make_immutable;
 __PACKAGE__->meta->make_immutable;
 
 1;

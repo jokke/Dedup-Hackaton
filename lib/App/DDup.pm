@@ -58,7 +58,8 @@ sub run_script {
     $settings->silent or say q{-} x $DASHES;
     $settings->silent or say "** TOTAL DUPES:   $total_dups";
     $settings->silent
-      or say q{** SAVED SPACE:   } . friendly_size($total_bytes);
+      or say q{** SAVED SPACE:   }
+      . ( $total_bytes ? friendly_size($total_bytes) : 0 );
     $settings->silent
       or say q{** SCAN TIME:     }
       . timestr timediff( $end_of_scan, $start_of_scan );
@@ -75,7 +76,11 @@ sub get_sorted_duplicates {
         while ( my $top = shift @{$same_size_candidates} ) { # do n! comparasion
             $top->is_duplicate
               and next;    # no need to find duplicates of a duplicate
-            my @dups = $top->find_duplicates( @{$same_size_candidates} );
+            my @dups = $top->find_duplicates(
+                grep {
+                    $top->inode != $_->inode    # sort out the hard links
+                } @{$same_size_candidates}
+            );
 
      # Would be more efficient to print duplicates here but need to store in RAM
      # for sorting and conform to competition rules
@@ -100,8 +105,8 @@ sub print_duplicates {
         }
         else {    # human output
             $settings->silent
-              or say sprintf 'DUPLICATES (size: %sb)',
-              friendly_size( $dups->[0]->size );
+              or say sprintf 'DUPLICATES (size: %s)',
+              $dups->[0]->size ? friendly_size( $dups->[0]->size ) : 0;
             for my $d ( @{$dups} ) {
                 $settings->silent or say "    $d->path";
             }
@@ -123,26 +128,13 @@ sub scan_dir {
     my %sorted_files;    #sorted per size
     for my $file (
         File::Find::Rule    # loop over
-#        ->file()            # all files
-        ->exec( sub { -f $_ && !-l $_ } )    # that are not symlinks
+        ->file()            # all files
+        ->exec( sub { !-l $_ } )    # that are not symlinks
         ->in( $settings->dir )
       )
     {                               # in the specified directory
         my ( undef, $ino, undef, undef, undef, undef, undef, $size ) =
           stat $file;
-
-        # check if we already have a file with the inode, i.e. a hard link
-        if (
-            my ($f) =
-            grep { $_->inode == $ino } @{ $sorted_files{$size}->{files} }
-          )
-        {
-   # use the "smallest" of the hardlinks, i.e. use file "a" rather than file "b"
-            if ( ( $file cmp $f->path ) < 0 ) {
-                $f->path($file);
-            }
-            next;    # don't add the hard link
-        }
 
         # add the file based on its size to an array for later comparation
         push @{ $sorted_files{$size}->{files} },
