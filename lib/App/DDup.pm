@@ -13,8 +13,10 @@ use Readonly;
 use App::DDup::File;
 use App::DDup::Settings;
 
-Readonly::Scalar my $DASHES   => 30;
-Readonly::Scalar my $KILOBYTE => 1024;
+Readonly::Scalar my $DASHES        => 30;
+Readonly::Scalar my $KILOBYTE      => 1024;
+Readonly::Scalar my $THIRTYTWOBITS => 2**32;
+Readonly::Scalar my $FLOATDIGITS   => 10;
 
 our $VERSION = '0.001';
 
@@ -45,6 +47,8 @@ sub run_script {
 
     print_duplicates( $settings, @duplicates );
 
+    $settings->confirm and @duplicates = confirm_duplicates(@duplicates);
+
     my ( $total_bytes, $total_dups ) = ( 0, 0 );
 
     # delete if needed and calculate what we saved
@@ -56,6 +60,10 @@ sub run_script {
         }
     }
 
+    $settings->coll_prob
+      and $settings->checksum eq 'Digest::xxHash'
+      and print_coll_prob( $settings, $total_dups );
+
     # print the footer
     $settings->silent or say q{-} x $DASHES;
     $settings->silent or say "** TOTAL DUPES:   $total_dups";
@@ -65,6 +73,25 @@ sub run_script {
     $settings->silent
       or say q{** SCAN TIME:     }
       . timestr timediff( $end_of_scan, $start_of_scan );
+    return 1;
+}
+
+sub print_coll_prob {
+    my ( $settings, $n ) = @_;
+
+    Math::BigFloat->accuracy($FLOATDIGITS);
+
+    my $h = $THIRTYTWOBITS;
+
+    my $prob = (
+        1 - Math::BigFloat->new( Math::BigFloat->new($h)->bfac )->bdiv(
+            Math::BigInt->new($h)->bpow($n)
+              ->bmul( Math::BigInt->new( $h - $n )->bfac )
+        )
+    );
+    $settings->silent
+      or say q{** COLLISION PROBABILITY: } . $prob;
+
     return 1;
 }
 
@@ -97,6 +124,22 @@ sub get_sorted_duplicates {
     return @duplicates;
 }
 
+sub confirm_duplicates {
+    my @duplicates = @_;
+    my @confirmed;
+
+    # confirm the duplicates in the list
+    for my $i ( 0 .. $#duplicates ) {
+        my $same_size_duplicates = delete $duplicates[$i];
+        my $top                  = shift @{$same_size_duplicates};
+        my @conf = $top->confirm_duplicates( @{$same_size_duplicates} );
+        if ( scalar @conf ) {
+            push @confirmed, [ $top, @conf ];
+        }
+    }
+    return @confirmed;
+}
+
 sub print_duplicates {
     my ( $settings, @duplicates ) = @_;
 
@@ -112,7 +155,7 @@ sub print_duplicates {
               or say sprintf 'DUPLICATES (size: %s)',
               $dups->[0]->size ? friendly_size( $dups->[0]->size ) : 0;
             for my $d ( @{$dups} ) {
-                $settings->silent or say "    $d->path";
+                $settings->silent or say q{    } . $d->path;
             }
         }
     }

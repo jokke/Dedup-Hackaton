@@ -55,6 +55,12 @@ has head => (
     clearer   => 'clear_head',
 );
 
+has need_compare => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => sub { 0 },
+);
+
 sub build_digest {
     my $self = shift;
 
@@ -81,6 +87,9 @@ sub build_digest {
 
     close $fh
       or carp q{Cannot close file handle for } . $self->path;
+
+    $self->need_compare(1)
+      ; # as we only made a digest, this needs a full compare to guarantee no collisions
 
     return $digest->digest;
 }
@@ -112,7 +121,7 @@ sub find_duplicates {
     return () if $self->is_duplicate;    # don't compare if self is duplicate
 
     if ( $self->size == 0 ) {            # assuming that zero sized are the same
-        return map { $_->duplicate($self) } @files;
+        return map { $_->duplicate($self) } grep { $_->size == 0 } @files;
     }
 
     if ( scalar(@files) == 1 and not $files[0]->has_digest ) {
@@ -147,6 +156,29 @@ sub find_duplicates {
         push @duplicates, $f;
     }
     return @duplicates;
+}
+
+sub confirm_duplicates {
+    my ( $self, @files ) = @_;
+
+    my @confirmed_duplicates;
+
+    for my $f (@files) {
+
+        if (
+            $f->need_compare
+            and    # if only digest has been done, full compare is needed
+            File::Compare::compare( $self->path, $files[0]->path,
+                $self->settings->block_size ) != 0
+          )
+        {
+            next; # full compare said the files were different, continue to next
+        }
+
+        push @confirmed_duplicates, $f;
+    }
+
+    return @confirmed_duplicates;
 }
 
 sub remove {

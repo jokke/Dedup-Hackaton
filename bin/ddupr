@@ -51,7 +51,13 @@ Optional:
                            Digest::xxHash). While xxHash is faster, MD5 is more
                            reliable.
      --silent          - Bool. If set, no information will be printed.
-
+     --confirm         - Bool. Default=0. Confirming duplicates. Does a full 
+                           file comparation to confirm no hash collisions has 
+                           occured. I/O intensive operation.
+     --coll_prob       - Bool. Default=0. Calculate the hash
+                           collision probability. Currently only available when
+                           Digest::xxHash has been used. Note, this might take some
+                           processing power to calculate.
 
 =head1 EXIT STATUS
 

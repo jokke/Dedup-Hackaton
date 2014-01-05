@@ -55,6 +55,22 @@ has silent => (
     documentation => 'If set, no information will be printed.',
 );
 
+has confirm => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => '0',
+    documentation =>
+'Confirming duplicates. Does a full file comparation to confirm no hash collisions has occured. I/O intensive operation.',
+);
+
+has coll_prob => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => '0',
+    documentation =>
+'Calculate the hash collision probability. Currently only available when Digest::xxHash has been used. Note, this might take some processing power to calculate.',
+);
+
 __PACKAGE__->meta->make_immutable;
 1;
 __END__
@@ -91,6 +107,11 @@ Has the following Moose attributes/[sg]eters:
                   but Digest::MD5 or Digest::SHA1 could also be used.
     silent      - don't print anything on STDOUT. Usefull for only removing or 
                   benchmarking
+    confirm     - confirming duplicates are really duplicates and not a result of
+                  hash collisions.
+    coll_prob   - calculate the hash collision probability, currently only available 
+                  when Digest::xxHash has been used, takes a lot of CPU power...so
+                  get some coffee ready
 
 =head1 DIAGNOSTICS
 
