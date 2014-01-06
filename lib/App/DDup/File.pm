@@ -121,7 +121,10 @@ sub find_duplicates {
     return () if $self->is_duplicate;    # don't compare if self is duplicate
 
     if ( $self->size == 0 ) {            # assuming that zero sized are the same
-        return map { $_->duplicate($self) } grep { $_->size == 0 } @files;
+        my %dev_inodes =
+          map { ( $_->inode, $_ ) }
+          reverse sort { $a->path cmp $b->path } @files;
+        return map     { $_->duplicate($self) } values %dev_inodes;
     }
 
     if ( scalar(@files) == 1 and not $files[0]->has_digest ) {
