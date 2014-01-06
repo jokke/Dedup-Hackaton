@@ -45,9 +45,9 @@ sub run_script {
 
     my $end_of_scan = Benchmark->new();
 
-    print_duplicates( $settings, @duplicates );
-
     $settings->confirm and @duplicates = confirm_duplicates(@duplicates);
+
+    print_duplicates( $settings, @duplicates );
 
     my ( $total_bytes, $total_dups ) = ( 0, 0 );
 
