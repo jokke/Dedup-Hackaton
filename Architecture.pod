@@ -1,0 +1,110 @@
+=head1 ARCHITECTURE
+
+Description of the archivecture of jokke's submission for the DFW.pm hackaton
+(Thanks guys!).
+
+=head2 FILES AND STRUCTURE
+
+The soltion consist of the following files and packages/classes:
+
+=over 4
+
+=item bin/ddupr
+
+The bootstrapper which imports and invokes App::DDup.
+
+=item lib/App/DDup.pm
+
+This package controls the execution order of the script.
+
+=item lib/App/DDup/File.pm
+
+A Moose class that represents a File in the file system. Also has methods for
+comparing files, generate digests, removing files, and reading head of files.
+
+=item lib/App/DDup/Settings.pm
+
+A Moose class that consumes the role MooseX::Getopt::Usage for command line
+settings and MooseX::Getopt::Usage::Role::Man to generate a man page from the
+POD.
+
+=back
+
+=head1 OUTLINE OF SOLUTION
+
+The list below outlines the basic steps of my solution:
+
+=over 4
+
+=item 1
+
+Scans all files in the given directory. Each file is created as a
+App::DDup::File object with attributes size, path, and the inode. The object is
+stored in a hash with the size as the key.
+
+=item 2
+
+The hash is filtered to remove all indexes that doesn't have more than one
+App::DDup::File object - and therefor no duplicates. The result is stored in an
+array called "candidates". Each index in the candidate list has an arrayref
+with App::DDup::File objects of the same file size.
+
+=item 3
+
+Each element is shifted of the list and compared with the rest of the list
+(that doesn't have the same inode, i.e. hardlinks are filtered) as follows:
+
+=over 4
+
+=item a)
+
+If the list only has one more element, i.e. n=2, then do a full file
+comparation. Digests are not needed in this case (n=2). If a duplicate is
+found, this is marked and returned as a list.
+
+=item b)
+
+If n>2, then first compare all the other files with a "head" comparation, if
+the heads are the same, then do a digest of the files and compare them. Both
+head and digest are lazy and only generated if needed. If size is smaller than
+the head size, no digest will be calculated. If a digest is calculated, the
+head is included so it doesn't have to be read twice. Duplicates are marked and
+returned as a list (head and digest are cleared to save RAM).
+
+=item c)
+
+The duplicates are sorted alphanumerical.
+
+=item d)
+
+Next element in the list that is not a duplicate are also inspected as above
+with all non-duplicates.
+
+=back
+
+=item 4
+
+Duplicates are optionally confirmed for possible hash collisions. All the once
+that have been identified with a digest will be fully compared to remove any
+false positives. This must be enabled with an option from the command line.
+
+=item 5
+
+Printing is performed of the duplicates.
+
+=item 6
+
+If enabled from the command line, collision probablility is calculated based on the number of duplicates according to the following formula:
+
+    H = possible number of digest outcomes (i.e. 2^32 with xxHash)
+    n = number of found duplicates
+
+    1 - H!/(H^n * (H-n)!)
+
+Note, this will take a very long time :)
+
+=item 7
+
+Footer is printed with some info on saved space etc.
+
+=back
