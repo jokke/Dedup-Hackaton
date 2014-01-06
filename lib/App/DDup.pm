@@ -101,14 +101,15 @@ sub get_sorted_duplicates {
 
 # find the actual duplicates in the candidate list - this for loop is the main work
     for my $i ( 0 .. $#candidates ) {
-        my $same_size_candidates = delete $candidates[$i];
-        while ( my $top = shift @{$same_size_candidates} ) { # do n! comparasion
+        my @same_size_candidates =
+          sort { $a->path cmp $b->path } @{ delete $candidates[$i] };
+        while ( my $top = shift @same_size_candidates ) {    # do n! comparasion
             $top->is_duplicate
               and next;    # no need to find duplicates of a duplicate
             my @dups = $top->find_duplicates(
                 grep {
                     $top->inode != $_->inode    # sort out the hard links
-                } @{$same_size_candidates}
+                } @same_size_candidates
             );
             $top->clear_head;                   # to save some RAM
             $top->clear_digest;                 # to save some RAM
@@ -116,8 +117,10 @@ sub get_sorted_duplicates {
      # Would be more efficient to print duplicates here but need to store in RAM
      # for sorting and conform to competition rules
             if ( scalar @dups ) {
-                push @duplicates,
-                  [ sort { $a->path cmp $b->path } $top, @dups ];
+                push @duplicates, [ $top, @dups ];
+
+    #                push @dups, $top;
+    #                push @duplicates, [ sort { $a->path cmp $b->path } @dups ];
             }
         }
     }
