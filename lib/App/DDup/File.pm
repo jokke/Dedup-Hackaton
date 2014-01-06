@@ -7,7 +7,7 @@ use File::Compare;
 use App::DDup::Settings;
 use Carp qw/confess carp/;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 has settings => (
     is       => 'rw',
@@ -124,7 +124,12 @@ sub find_duplicates {
         my %dev_inodes =
           map { ( $_->inode, $_ ) }
           reverse sort { $a->path cmp $b->path } @files;
-        return map     { $_->duplicate($self) } values %dev_inodes;
+        my @sorted_files;
+        for my $f ( sort { $a->path cmp $b->path } values %dev_inodes ) {
+            $f->duplicate($self);
+            push @sorted_files, $f;
+        }
+        return @sorted_files;
     }
 
     if ( scalar(@files) == 1 and not $files[0]->has_digest ) {

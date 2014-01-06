@@ -2,7 +2,7 @@ NAME
        ddupr - Command line frontend for App::DDup
 
 VERSION
-       0.001
+       0.002
 
 DESCRIPTION
        Identifying duplicated files in a given directory with the option of

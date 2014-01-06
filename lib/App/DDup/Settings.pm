@@ -2,7 +2,7 @@ package App::DDup::Settings;
 use Moose;
 use namespace::autoclean;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 with 'MooseX::Getopt::Usage';
 with 'MooseX::Getopt::Usage::Role::Man';
@@ -83,7 +83,7 @@ App::DDup::Settings for App::DDup
 
 =head1 VERSION
 
-0.001
+0.002
 
 =head1 SYNOPSIS
     

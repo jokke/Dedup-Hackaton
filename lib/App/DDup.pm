@@ -18,7 +18,7 @@ Readonly::Scalar my $KILOBYTE      => 1024;
 Readonly::Scalar my $THIRTYTWOBITS => 2**32;
 Readonly::Scalar my $FLOATDIGITS   => 10;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 # ABSTRACT: deduping functionality for DFW.pm hackaton
 

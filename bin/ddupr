@@ -4,7 +4,7 @@ use warnings;
 
 use App::DDup -run_script;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 1;
 __END__
@@ -17,7 +17,7 @@ ddupr - Command line frontend for App::DDup
 
 =head1 VERSION
 
-0.001
+0.002
 
 =head1 DESCRIPTION
 
